@@ -3,10 +3,12 @@ package ru.luxoft.cources;
 public class Jeans {
     private String model;
     private String size;
-    private Float  price;
+    private Float price;
     private Integer count;
 
-    public Jeans(){};
+    public Jeans() {
+    }
+
     public Jeans(String model, String size, Float price, Integer count) {
         this.model = model;
         this.size = size;
