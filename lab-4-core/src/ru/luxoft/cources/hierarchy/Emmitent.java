@@ -8,7 +8,7 @@ public class Emmitent {
     private List<Market> marketList;
 
 
-    public Emmitent(String name,Stock stock, List<Market> marketList) {
+    public Emmitent(String name, Stock stock, List<Market> marketList) {
         this.name = name;
         this.stock = stock;
         this.marketList = marketList;
@@ -38,7 +38,6 @@ public class Emmitent {
     public void setMarketList(List<Market> marketList) {
         this.marketList = marketList;
     }
-
 
 
 }

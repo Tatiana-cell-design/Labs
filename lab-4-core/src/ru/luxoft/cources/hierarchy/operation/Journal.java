@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Journal {
-    private List<Operation> operations;
+    private final List<Operation> operations;
 
     public Journal() {
-        operations = new ArrayList<Operation>();
+        operations = new ArrayList<>();
     }
 
     public List<Operation> getOperations() {
