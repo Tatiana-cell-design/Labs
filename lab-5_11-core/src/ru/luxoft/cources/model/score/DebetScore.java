@@ -4,7 +4,7 @@ import ru.luxoft.cources.model.account.Account;
 import ru.luxoft.cources.model.money.Money;
 
 public class DebetScore extends Score {
-    private CreditScore creditScore;
+    private final CreditScore creditScore;
 
     public DebetScore(Money balance, Account owner, Integer number, CreditScore creditScore) {
         super(balance, owner, number);
@@ -13,8 +13,8 @@ public class DebetScore extends Score {
 
 
     @Override
-    public void addMoney(Money money){
-        if(creditScore.getMoneyWithoutLess().getValue() < 20000) {
+    public void addMoney(Money money) {
+        if (creditScore.getMoneyWithoutLess().getValue() < 20000) {
             System.out.println("Debit account closed, credit account balance less than 20,000!");
             return;
         }
@@ -22,13 +22,13 @@ public class DebetScore extends Score {
     }
 
     @Override
-    public Money getMoney(double balanceLess){
-        if(creditScore.getMoneyWithoutLess().getValue() < 20000) {
+    public Money getMoney(double balanceLess) {
+        if (creditScore.getMoneyWithoutLess().getValue() < 20000) {
             System.out.println("Debit account closed, credit account balance less than 20,000!");
             return null;
         }
 
-        if(this.getBalance().getValue() <= 0) {
+        if (this.getBalance().getValue() <= 0) {
             System.out.println("No money!");
             return null;
         }
@@ -37,8 +37,8 @@ public class DebetScore extends Score {
     }
 
     @Override
-    public Money getMoneyWithoutLess(){
-        if(creditScore.getMoneyWithoutLess().getValue() < 20000) {
+    public Money getMoneyWithoutLess() {
+        if (creditScore.getMoneyWithoutLess().getValue() < 20000) {
             System.out.println("No money on Credit Score!");
             return null;
         }
