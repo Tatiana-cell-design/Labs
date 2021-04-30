@@ -4,27 +4,35 @@ import java.util.Objects;
 
 class Entry<K, V> {
     // 1
-    Object key;
-    Object val;
+    K key;
+    V val;
     Entry<K, V> next;          //**
 
-    public Entry(Object key, Object val) {
+    public Entry(K key, V val) {
         this.key = key;
         this.val = val;
     }
 
-    public Object setValueAndReturnOld(Object val) {
-        Object tmp = this.val;
+    public V setValueAndReturnOld(V val) {
+        V tmp = this.val;
         this.val = val;
         return tmp;
     }
 
-    public Object getKey() {
+    public K getKey() {
         return key;
     }
 
-    public Object getVal() {
+    public void setKey(K key) {
+        this.key = key;
+    }
+
+    public V getVal() {
         return val;
+    }
+
+    public void setVal(V val) {
+        this.val = val;
     }
 
     public Entry<K, V> getNext() {
@@ -35,102 +43,70 @@ class Entry<K, V> {
         this.next = next;
     }
 
-    public void setKey(Object key) {
-        this.key = key;
-    }
-    public void setVal(Object val) {
-        this.val = val;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (o == null || this.getClass().getName() != o.getClass().getName()) {
+        if (o == null || this.getClass() != o.getClass()) {
             return false;
         }
-        Entry e = (Entry) o;
-        if (this.key == e.key) {
-            return true;
-        }
-        return false;
+        Entry<?, ?> e = (Entry<?, ?>) o;
+        return this.key == e.key;
     }
 
     @Override
     public int hashCode() {
-        int prime = 13;
-        int mul = 11;
-        if (key != null) {
-            int hashCode = prime * mul + key.hashCode();
-            return hashCode;
-        }
-        return 0;
+        return key != null ? 13 * 11 + key.hashCode() : 0;
     }
 }
 
-public class HashMapImpl {
+public class HashMapImpl<K, V> {
     // 3
-    private float loadfactor = 0.75f;
-    private int capacity = 100;
+    private static final int CAPACITY = 100;
+    @SuppressWarnings("unchecked")
+    private final Entry<K, V>[] table = new Entry[CAPACITY];
     private int size = 0;
-    private Entry table[] = new Entry[capacity];
-    private Entry nulltable = null;
+    private Entry<K, V> nullTable = null;
+
     // 4
     private int hashing(int hashCode) {
-        int location = hashCode % capacity;
-        System.out.println("Location :"+location);
+        int location = hashCode % CAPACITY;
+        System.out.println("Location :" + location);
         return location;
     }
+
     // 5
     public int size() {
-        // TODO Auto-generated method stub
         return this.size;
     }
+
     // 6
     public boolean isEmpty() {
         return this.size == 0;
     }
+
     // 7
-    public boolean containsKey(Object key) {
+    public boolean containsKey(K key) {
 
         if (key == null) {
-            return nulltable != null;
+            return nullTable != null;
         }
         return getEntryByKeyFromTable(key) != null;
-
-        /*
-        if(key == null) {
-            if(table[0].getKey() == null) {
-                return true;
-            }
-        }
-        int location = Hashing(key.hashCode());
-        Entry e = null;
-        try {
-            e = table[location];
-        }catch(NullPointerException ex) {
-
-        }
-        if(e!= null && e.getKey() == key) {
-            return true;
-        }
-        return false;
-        */
-
     }
 
-    private Entry getEntryByKeyFromTable(Object key) {
+    private Entry<K, V> getEntryByKeyFromTable(K key) {
         int location = hashing(key.hashCode());
-        Entry  element = table[location];
+        Entry<K, V> element = table[location];
         while (element != null && !element.getKey().equals(key)) {
             element = element.getNext();
         }
         return element;
     }
-    private Entry getEntryParentByKeyFromTable(Object key) {
+
+    private Entry<K, V> getEntryParentByKeyFromTable(K key) {
         int location = hashing(key.hashCode());
-        Entry element = table[location];
+        Entry<K, V> element = table[location];
         if (element == null || element.getNext() == null) {
             return null;
         } else {
@@ -142,18 +118,18 @@ public class HashMapImpl {
     }
 
 
-
     // 8
-    public boolean containsValue(Object value) {
-        for(int i=0; i<table.length;i++) {
-            if(isValueInTable(i,value)){
+    public boolean containsValue(V value) {
+        for (int i = 0; i < table.length; i++) {
+            if (isValueInTable(i, value)) {
                 return true;
             }
         }
         return false;
     }
-    private boolean isValueInTable(int location,Object value) {
-        Entry element = table[location];
+
+    private boolean isValueInTable(int location, V value) {
+        Entry<K, V> element = table[location];
         while (element != null) {
             if (Objects.equals(value, element.getVal())) {
                 return true;
@@ -167,20 +143,20 @@ public class HashMapImpl {
 
     // 9
 
-    public Object get(Object key) {
-            if (key == null) {
-                return nulltable == null ? null : nulltable.getVal();
-            } else {
-                Entry entry = getEntryByKeyFromTable(key);
-                return entry == null ? null : entry.getVal();
-            }
+    public V get(K key) {
+        if (key == null) {
+            return nullTable == null ? null : nullTable.getVal();
+        } else {
+            Entry<K, V> entry = getEntryByKeyFromTable(key);
+            return entry == null ? null : entry.getVal();
         }
+    }
 
-    private Entry getLastElementInTable(int location) {
+    private Entry<K, V> getLastElementInTable(int location) {
         if (table[location] == null) {
             return null;
         } else {
-            Entry element = table[location];
+            Entry<K, V> element = table[location];
             while (element.getNext() != null) {
                 element = element.getNext();
             }
@@ -188,169 +164,71 @@ public class HashMapImpl {
         }
     }
 
+    // 10
+    public V put(K key, V val) {
+        if (size >= CAPACITY) {
+            System.out.println("Rehashing required");
+            return null;
+        }
 
-       /* Object ret = null;
-        if(key == null) {
-            Entry e = null;
-            try{
-                e = table[0];
-            }catch(NullPointerException ex) {
-
-            }
-            if(e != null) {
-                return  e.getVal();
+        if (key == null) {
+            if (nullTable == null) {
+                nullTable = new Entry<>(null, val);
+                size++;
+                return null;
+            } else {
+                return nullTable.setValueAndReturnOld(val);
             }
         } else {
-            int location = hashing(key.hashCode());
-            Entry e = null;
-            try{
-                e = table[location];
-            }catch(NullPointerException ex) {
+            Entry<K, V> entry = getEntryByKeyFromTable(key);
+            if (entry == null) {
+                int location = hashing(key.hashCode());
+                size++;
+                entry = getLastElementInTable(location);
+                Entry<K, V> newEntry = new Entry<>(key, val);
 
-            }
-            if(e!= null && e.getKey() == key) {
-                return e.getVal();
+                if (entry == null) {
+                    table[location] = newEntry;
+                } else {
+                    entry.setNext(newEntry);
+                }
+                return null;
+            } else {
+                return entry.setValueAndReturnOld(val);
             }
         }
-        return ret;
-        */
+    }
 
-
-  // 10
-
-    public Object put(Object key, Object val ) {
-            if (size >= capacity) {
-                System.out.println("Rehashing required");
+    public V remove(K key) {
+        if (key == null) {
+            if (nullTable != null) {
+                V retValue = nullTable.getVal();
+                nullTable = null;
+                size--;
+                return retValue;
+            } else {
                 return null;
             }
+        }
 
-            if (key == null) {
-                if (nulltable == null) {
-                    nulltable = new Entry<>(null, val);
-                    size++;
-                    return null;
-                } else {
-                    return nulltable.setValueAndReturnOld(val);
-                }
+        int location = hashing(key.hashCode());
+        Entry<K, V> entry = getEntryParentByKeyFromTable(key);
+        if (entry == null) {
+            if (table[location] != null && table[location].getKey().equals(key)) {
+                V retValue = table[location].getVal();
+                table[location] = table[location].getNext();
+                size--;
+                return retValue;
             } else {
-                Entry entry = getEntryByKeyFromTable(key);
-                if (entry == null) {
-                    int location = hashing(key.hashCode());
-                    size++;
-                    entry = getLastElementInTable(location);
-                    Entry newEntry = new Entry<>(key, val);
-
-                    if (entry == null) {
-                        table[location] = newEntry;
-                    } else {
-                        entry.setNext(newEntry);
-                    }
-                    return null;
-                } else {
-                    return entry.setValueAndReturnOld(val);
-                }
+                return null;
             }
-        }
-   /*   Object ret = null;
-      if (key == null) {
-          ret = putForNullKey(val);
-          return ret;
-      } else {
-          int location = hashing(key.hashCode());
-          if(location >= capacity) {
-              System.out.println("Rehashing required");
-              return null;
-          }
-          Entry e = null;
-          try{
-              e = table[location];
-          }catch(NullPointerException ex) {
-
-          }
-          if (e!= null && e.getKey() == key) {
-              ret = e.getVal();
-          } else {
-              Entry eNew = new Entry();
-              eNew.setKey(key);
-              eNew.setVal(val);
-              table[location] = eNew;
-              size++;
-          }
-      }
-      return ret;
-
-    */
-
-    // 11
-    private Object putForNullKey(Object val) {
-        Entry e = null;
-        try {
-            e = table[0];
-        }catch(NullPointerException ex) {
-
-        }
-        Object ret = null;
-        if (e != null && e.getKey() == null) {
-            ret = e.getVal();
-            e.setVal(val);
-            return ret;
         } else {
-            Entry eNew = new Entry(null,val);
-           // eNew.setKey(null);
-           // eNew.setVal(val);
-            table[0] = eNew;
-            size++;
+            V retValue = entry.getNext().getVal();
+            entry.setNext(entry.getNext().getNext());
+            size--;
+            return retValue;
         }
-        return ret;
     }
-     // 12   System.out.println("for = "+ i +"-- " +table[i].getVal());
-      /* public Object remove(Object key) {
-         int location = hashing(key.hashCode());
-
-         System.out.println("remove ");
-         System.out.println("location = "+ location);
-         Object ret = null;
-        // if(table[location].getKey() == key) {
-         if(table[location] != null && table[location].getKey().equals(key)) {
-             for(int i=location; i<table.length-1;i++) {
-
-                 table[i] = table[i+1];
-             }
-         }
-         return ret;
-     }
-*/
-         public Object remove (Object key) {
-             if (key == null) {
-                 if (nulltable != null) {
-                     Object retValue = nulltable.getVal();
-                     nulltable = null;
-                     size--;
-                     return retValue;
-                 } else {
-                     return null;
-                 }
-             }
-
-             int location = hashing(key.hashCode());
-             Entry  entry = getEntryParentByKeyFromTable(key);
-             if (entry == null) {
-                 if (table[location] != null && table[location].getKey().equals(key)) {
-                     Object retValue = table[location].getVal();
-                     table[location] = table[location].getNext();
-                     size--;
-                     return retValue;
-                 } else {
-                     return null;
-                 }
-             } else {
-                Object retValue = entry.getNext().getVal();
-                 entry.setNext(entry.getNext().getNext());
-                 size--;
-                 return retValue;
-             }
-         }
-
 
 
 }
